@@ -97,7 +97,7 @@ export function Login() {
             Don{"'"}t Have An Account?{' '}
             <Link href="/auth" className="underline cursor-pointer">
               {' '}
-              Sign Up
+              Sign UP
             </Link>
           </p>
           <p className="mt-4 text-sm text-red-600">
