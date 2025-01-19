@@ -149,7 +149,7 @@ export function RegisterAfter({
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <div>
           <h1 className="text-3xl font-bold text-left mb-4 cursor-pointer">
-            Sign Up
+            Sign UP
           </h1>
         </div>
         {!isAfterProvider &&
