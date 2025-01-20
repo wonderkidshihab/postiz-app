@@ -9,19 +9,20 @@ jobs:
   deploy:
     name: Deploy Application
     runs-on: ubuntu-latest
-    timeout-minutes: 120  # Set job timeout to 2 hours
+    timeout-minutes: 180  # Adjust overall job timeout if needed
 
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
 
     - name: Deploy via SSH
-      uses: appleboy/ssh-action@v0.1.9
+      uses: appleboy/ssh-action@v1.0.3  # Pinned to stable version
       with:
         host: 84.247.129.116
         username: root
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22
+        command_timeout: 20m  # Adjusted command timeout to 20 minutes
         script: |
           # Add ServerAliveInterval to keep the SSH connection alive
           echo "ServerAliveInterval 60" >> /etc/ssh/ssh_config
@@ -32,65 +33,7 @@ jobs:
           git fetch origin main
           git reset --hard origin/main
 
-          # Function to check if memory or CPU usage is over 80%
-          function check_resources {
-            memory_usage=$(free | awk '/Mem/ {print $3/$2 * 100.0}')
-            cpu_usage=$(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1}')
-            
-            echo "Memory Usage: $memory_usage%"
-            echo "CPU Usage: $cpu_usage%"
-
-            # If memory or CPU usage is greater than 80%, pause and wait for a bit
-            if (( $(echo "$memory_usage > 80" | bc -l) )) || (( $(echo "$cpu_usage > 80" | bc -l) )); then
-              echo "High resource usage detected. Waiting for 30 seconds to stabilize..."
-              sleep 30
-              check_resources  # Recursively call to check again
-            fi
-          }
-
-          # Early check on resources before starting anything
-          check_resources
-
-          # Function to limit CPU and memory usage for the process
-          function limit_resources {
-            echo "Setting resource limits (Memory: 12GB, CPU: 4 vCPUs)..."
-
-            # Set memory limit to 12 GB (in KB)
-            ulimit -v 12582912  # 12 GB in KB
-            # Set maximum number of processes (optional)
-            ulimit -u 4096
-          }
-
-          # Apply resource limits before starting Docker build
-          limit_resources
-
-          # Retry function with a backoff strategy
-          function retry {
-            local n=1
-            local max=5
-            local delay=10
-            while true; do
-              "$@" && return 0
-              if (( n == max )); then
-                echo "Attempt $n failed and no more retries left!"
-                return 1
-              else
-                echo "Attempt $n failed! Retrying in $delay seconds..."
-                ((n++))
-                sleep $delay
-              fi
-            done
-          }
-
-          # Retry Docker build with a timeout of 40 minutes
-          retry timeout 40m bash -c "
-            while true; do
-              echo 'Building Docker images...'
-              sleep 30  # Output every 30 seconds to keep the connection alive
-            done &
-            docker compose build --no-cache
-          "
-
-          # Retry Docker down and up commands
-          retry docker compose down
-          retry docker compose up -d
+          # Start building Docker images
+          docker compose build --no-cache --progress=plain
+          docker compose down
+          docker compose up -d
