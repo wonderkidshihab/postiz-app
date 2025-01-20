@@ -9,6 +9,7 @@ jobs:
   deploy:
     name: Deploy Application
     runs-on: ubuntu-latest
+    timeout-minutes: 120  # Extend the job timeout to 2 hours
 
     steps:
     - name: Checkout Code
@@ -26,12 +27,19 @@ jobs:
           echo "ServerAliveInterval 60" >> /etc/ssh/ssh_config
           echo "ServerAliveCountMax 100" >> /etc/ssh/ssh_config
 
+          # Ensure Docker is in the right directory
           cd /home/zoomblie
           git fetch origin main
           git reset --hard origin/main
-          docker compose down
           
-          # Timeout for the build command
-          timeout 20m docker compose build --no-cache
 
+          # Start building with a timeout of 20 minutes and add periodic output to prevent inactivity timeout
+          timeout 20m bash -c "
+            while true; do
+              echo 'Building Docker images...'
+              sleep 30  # Output every 30 seconds
+            done &
+            docker compose build --no-cache
+          "
+          docker compose down
           docker compose up -d
