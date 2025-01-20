@@ -22,12 +22,16 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22
         script: |
+          # Add ServerAliveInterval to keep the SSH connection alive
+          echo "ServerAliveInterval 60" >> /etc/ssh/ssh_config
+          echo "ServerAliveCountMax 100" >> /etc/ssh/ssh_config
+
           cd /home/zoomblie
           git fetch origin main
           git reset --hard origin/main
           docker compose down
-          timeout 20m docker compose build --no-cache
-          docker compose up -d
-
-
           
+          # Timeout for the build command
+          timeout 20m docker compose build --no-cache
+
+          docker compose up -d
