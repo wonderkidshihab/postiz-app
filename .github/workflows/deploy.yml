@@ -25,6 +25,7 @@ jobs:
           cd /home/zoomblie
           git fetch origin main
           git reset --hard origin/main
+          systemctl stop nginx
           docker compose down
-          docker compose up -d --build --timeout 300
-
+          docker compose up -d --build --timeout 60
+          systemctl start nginx
