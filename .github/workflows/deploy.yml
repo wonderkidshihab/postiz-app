@@ -9,22 +9,31 @@ jobs:
   deploy:
     name: Deploy Application
     runs-on: ubuntu-latest
+    timeout-minutes: 180  # Adjust overall job timeout if needed
 
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
 
     - name: Deploy via SSH
-      uses: appleboy/ssh-action@v0.1.9
+      uses: appleboy/ssh-action@v1.0.3  # Pinned to stable version
       with:
         host: 84.247.129.116
         username: root
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22
+        command_timeout: 20m  # Adjusted command timeout to 20 minutes
         script: |
+          # Add ServerAliveInterval to keep the SSH connection alive
+          echo "ServerAliveInterval 60" >> /etc/ssh/ssh_config
+          echo "ServerAliveCountMax 100" >> /etc/ssh/ssh_config
+
+          # Ensure Docker is in the right directory
           cd /home/zoomblie
           git fetch origin main
           git reset --hard origin/main
-          docker compose down
-          docker compose up -d --build --timeout 300
 
+          # Start building Docker images
+          docker compose build --no-cache --progress=plain
+          docker compose down
+          docker compose up -d

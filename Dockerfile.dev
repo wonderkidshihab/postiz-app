@@ -53,7 +53,10 @@ COPY nx.json tsconfig.base.json package.json package-lock.json build.plugins.js 
 COPY apps /app/apps/
 COPY libraries /app/libraries/
 
-RUN npm ci --no-fund && npx nx run-many --target=build --projects=frontend,backend,workers,cron
+RUN  npm ci --no-fund && npx nx run-many --target=build --projects=frontend,backend,workers,cron
+
+#RUN timeout 1200 npm ci --no-fund && timeout 1200 npx nx run-many --target=build --projects=frontend,backend,workers,cron
+RUN sleep 40
 
 VOLUME /config
 VOLUME /uploads
@@ -64,6 +67,7 @@ LABEL org.opencontainers.image.title="Postiz App (DevContainer)"
 FROM base AS dist
 
 COPY --from=devcontainer /app/node_modules/ /app/node_modules/
+
 COPY --from=devcontainer /app/dist/ /app/dist/
 
 # Required for prisma
