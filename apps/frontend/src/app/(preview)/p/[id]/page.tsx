@@ -2,19 +2,18 @@ import { internalFetch } from '@gitroom/helpers/utils/internal.fetch';
 
 export const dynamic = 'force-dynamic';
 
-import { Metadata } from 'next';
-import { isGeneralServerSide } from '@gitroom/helpers/utils/is.general.server.side';
-import Image from 'next/image';
-import Link from 'next/link';
 import { CommentsComponents } from '@gitroom/frontend/components/preview/comments.components';
+import { CopyClient } from '@gitroom/frontend/components/preview/copy.client';
+import { VideoOrImage } from '@gitroom/react/helpers/video.or.image';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { VideoOrImage } from '@gitroom/react/helpers/video.or.image';
-import { CopyClient } from '@gitroom/frontend/components/preview/copy.client';
+import { Metadata } from 'next';
+import Image from 'next/image';
+import Link from 'next/link';
 
 dayjs.extend(utc);
 export const metadata: Metadata = {
-  title: `${isGeneralServerSide() ? 'Postiz' : 'Gitroom'} Preview`,
+  title: `Zoomblie Preview`,
   description: '',
 };
 
@@ -148,7 +147,11 @@ export default async function Auth({
                             key={p.name}
                             className="flex-1 rounded-[10px] max-h-[500px] overflow-hidden"
                           >
-                            <VideoOrImage isContain={true} src={p.path} autoplay={true} />
+                            <VideoOrImage
+                              isContain={true}
+                              src={p.path}
+                              autoplay={true}
+                            />
                           </div>
                         ))}
                       </div>

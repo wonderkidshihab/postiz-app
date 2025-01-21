@@ -1,11 +1,10 @@
 import { Seller } from '@gitroom/frontend/components/marketplace/seller';
+import { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
-import { Metadata } from 'next';
-import { isGeneralServerSide } from '@gitroom/helpers/utils/is.general.server.side';
 
 export const metadata: Metadata = {
-  title: `${isGeneralServerSide() ? 'Postiz' : 'Gitroom'} Marketplace`,
+  title: `Zoomblie Marketplace`,
   description: '',
 };
 export default async function Index({
